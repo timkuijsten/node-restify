@@ -136,7 +136,6 @@ before(function (callback) {
         });
 
         SERVER.use(restify.acceptParser(['json', 'text/plain']));
-        SERVER.use(restify.jsonp()); // Added for GH-778
         SERVER.use(restify.dateParser());
         SERVER.use(restify.authorizationParser());
         SERVER.use(restify.queryParser());
@@ -235,21 +234,6 @@ test('GET json', function (t) {
         t.ok(req);
         t.ok(res);
         t.deepEqual(obj, {hello: 'mcavage'});
-        t.end();
-    });
-});
-
-test('GH-778 GET jsonp', function (t) {
-    // Using variables here to keep lines under 80 chars
-    var jsonpUrl = '/json/jsonp?callback=testCallback';
-    var expectedResult = 'typeof testCallback === \'function\' && ' +
-                         'testCallback({"hello":"jsonp"});';
-
-    JSON_CLIENT.get(jsonpUrl, function (err, req, res) {
-        t.ifError(err);
-        t.ok(req);
-        t.ok(res);
-        t.equal(res.body, expectedResult);
         t.end();
     });
 });
