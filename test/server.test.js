@@ -1266,12 +1266,10 @@ test('GH-323: <url>/<path>/?<queryString> broken', function (t) {
         res.send(req.params);
     });
 
-    SERVER.listen(8080, function () {
-        CLIENT.get('/hello/foo/?bar=baz', function (err, _, __, obj) {
-            t.ifError(err);
-            t.deepEqual(obj, {name: 'foo', bar: 'baz'});
-            t.end();
-        });
+    CLIENT.get('/hello/foo/?bar=baz', function (err, _, __, obj) {
+        t.ifError(err);
+        t.deepEqual(obj, {name: 'foo', bar: 'baz'});
+        t.end();
     });
 });
 
@@ -1283,12 +1281,10 @@ test('<url>/?<queryString> broken', function (t) {
         res.send(req.params);
     });
 
-    SERVER.listen(8080, function () {
-        CLIENT.get('/?bar=baz', function (err, _, __, obj) {
-            t.ifError(err);
-            t.deepEqual(obj, {bar: 'baz'});
-            t.end();
-        });
+    CLIENT.get('/?bar=baz', function (err, _, __, obj) {
+        t.ifError(err);
+        t.deepEqual(obj, {bar: 'baz'});
+        t.end();
     });
 });
 
@@ -1348,38 +1344,36 @@ test('content-type routing vendor', function (t) {
         res.send(202);
     });
 
-    SERVER.listen(8080, function () {
-        var _done = 0;
+    var _done = 0;
 
-        function done() {
-            if (++_done === 2) {
-                t.end();
-            }
+    function done() {
+        if (++_done === 2) {
+            t.end();
         }
+    }
 
-        var opts = {
-            path: '/',
-            headers: {
-                'content-type': 'application/vnd.joyent.com.foo+json'
-            }
-        };
-        CLIENT.post(opts, {}, function (err, _, res) {
-            t.ifError(err);
-            t.equal(res.statusCode, 201);
-            done();
-        });
+    var opts = {
+        path: '/',
+        headers: {
+            'content-type': 'application/vnd.joyent.com.foo+json'
+        }
+    };
+    CLIENT.post(opts, {}, function (err, _, res) {
+        t.ifError(err);
+        t.equal(res.statusCode, 201);
+        done();
+    });
 
-        var opts2 = {
-            path: '/',
-            headers: {
-                'content-type': 'application/vnd.joyent.com.bar+json'
-            }
-        };
-        CLIENT.post(opts2, {}, function (err, _, res) {
-            t.ifError(err);
-            t.equal(res.statusCode, 202);
-            done();
-        });
+    var opts2 = {
+        path: '/',
+        headers: {
+            'content-type': 'application/vnd.joyent.com.bar+json'
+        }
+    };
+    CLIENT.post(opts2, {}, function (err, _, res) {
+        t.ifError(err);
+        t.equal(res.statusCode, 202);
+        done();
     });
 });
 
