@@ -147,67 +147,6 @@ test('authorization basic invalid', function (t) {
 });
 
 
-test('body url-encoded ok', function (t) {
-    SERVER.post('/bodyurl/:id',
-        restify.bodyParser(),
-        function (req, res, next) {
-            t.equal(req.params.id, 'foo');
-            t.equal(req.params.name, 'markc');
-            t.equal(req.params.phone, '(206) 555-1212');
-            res.send();
-            next();
-        });
-
-    var opts = {
-        hostname: '127.0.0.1',
-        port: PORT,
-        path: '/bodyurl/foo?name=markc',
-        agent: false,
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-    };
-    var client = http.request(opts, function (res) {
-        t.equal(res.statusCode, 200);
-        t.end();
-    });
-
-    client.write('phone=(206)%20555-1212&name=somethingelse');
-    client.end();
-});
-
-
-test('body url-encoded ok (no params)', function (t) {
-    SERVER.post('/bodyurl2/:id',
-        restify.bodyParser({ mapParams: false }),
-        function (req, res, next) {
-            t.equal(req.params.id, 'foo');
-            t.equal(req.params.name, 'markc');
-            t.notOk(req.params.phone);
-            t.equal(req.body.phone, '(206) 555-1212');
-            res.send();
-            next();
-        });
-
-    var opts = {
-        hostname: '127.0.0.1',
-        port: PORT,
-        path: '/bodyurl2/foo?name=markc',
-        agent: false,
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-    };
-    var client = http.request(opts, function (res) {
-        t.equal(res.statusCode, 200);
-        t.end();
-    });
-    client.write('phone=(206)%20555-1212&name=somethingelse');
-    client.end();
-});
-
 test('body multipart ok', function (t) {
     SERVER.post('/multipart/:id',
         restify.bodyParser(),

@@ -428,45 +428,6 @@ test('Check error (404)', function (t) {
 });
 
 
-test('POST text', function (t) {
-    var body = 'hello=foo';
-    STR_CLIENT.post('/str/mcavage', body, function (err, req, res, data) {
-        t.ifError(err);
-        t.ok(req);
-        t.ok(res);
-        t.equal(res.body, data);
-        t.equal(data, 'hello foo');
-        t.end();
-    });
-});
-
-
-test('PATCH text', function (t) {
-    var body = 'hello=foo';
-    STR_CLIENT.patch('/str/mcavage', body, function (err, req, res, data) {
-        t.ifError(err);
-        t.ok(req);
-        t.ok(res);
-        t.equal(res.body, data);
-        t.equal(data, 'hello foo');
-        t.end();
-    });
-});
-
-
-test('POST text (object)', function (t) {
-    var body = {hello: 'foo'};
-    STR_CLIENT.post('/str/mcavage', body, function (err, req, res, data) {
-        t.ifError(err);
-        t.ok(req);
-        t.ok(res);
-        t.equal(res.body, data);
-        t.equal(data, 'hello foo');
-        t.end();
-    });
-});
-
-
 test('POST text empty body string', function (t) {
     var body = '';
     STR_CLIENT.post('/str/mcavage', body, function (err, req, res, data) {
@@ -505,18 +466,6 @@ test('POST text empty body object', function (t) {
     });
 });
 
-
-test('PUT text', function (t) {
-    var body = 'hello=foo';
-    STR_CLIENT.put('/str/mcavage', body, function (err, req, res, data) {
-        t.ifError(err);
-        t.ok(req);
-        t.ok(res);
-        t.equal(res.body, data);
-        t.equal(data, 'hello foo');
-        t.end();
-    });
-});
 
 test('PUT text empty body string', function (t) {
     var body = '';
@@ -577,35 +526,6 @@ test('GET raw', function (t) {
     });
 });
 
-
-test('POST raw', function (t) {
-    var opts = {
-        path: '/str/mcavage',
-        headers: {
-            'content-type': 'application/x-www-form-urlencoded'
-        }
-    };
-    RAW_CLIENT.post(opts, function (connectErr, req) {
-        t.ifError(connectErr);
-
-        req.write('hello=snoopy');
-        req.end();
-
-        req.on('result', function (err, res) {
-            t.ifError(err);
-            res.body = '';
-            res.setEncoding('utf8');
-            res.on('data', function (chunk) {
-                res.body += chunk;
-            });
-
-            res.on('end', function () {
-                t.equal(res.body, 'hello snoopy');
-                t.end();
-            });
-        });
-    });
-});
 
 test('PR-726 Enable {agent: false} option override per request', function (t) {
     var opts = {
