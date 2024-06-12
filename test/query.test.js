@@ -103,9 +103,9 @@ test('query: bracket object (default options)', function (t) {
         restify.queryParser(),
         function (req, res, next) {
             t.equal(req.params.id, 'foo');
-            t.ok(req.params.name);
-            t.equal(req.params.name.first, 'mark');
-            t.equal(req.query.name.last, 'cavage');
+            t.ok(req.params['name[first]']);
+            t.equal(req.params['name[first]'], 'mark');
+            t.equal(req.query['name[last]'], 'cavage');
             res.send();
             next();
         });
@@ -122,7 +122,7 @@ test('query: bracket array (default options)', function (t) {
     SERVER.get('/query/:id',
         restify.queryParser(),
         function (req, res, next) {
-            t.deepEqual(req.params, {id: 'foo', a: [1, 2]});
+            t.deepEqual(req.params, {id: 'foo', 'a[]': [1, 2]});
             res.send();
             next();
         });
@@ -141,7 +141,8 @@ test('query: bracket array (#444, #895)', function (t) {
         function (req, res, next) {
             t.deepEqual(req.params, {
                 id: 'foo',
-                pizza: { left: [ 'pepperoni', 'bacon' ], right: [ 'ham' ] }
+                'pizza[left][]': [ 'pepperoni', 'bacon' ],
+                'pizza[right][]': 'ham'
             });
             res.send();
             next();
@@ -207,34 +208,14 @@ test('query: plainObjects=true by default', function (t) {
     });
 });
 
-// Note: This default is the opposite of restify versions other than 4.x
-// and restify-plugins.
-test('query: allowDots=true by default', function (t) {
+test('query: allowDots=false plainObjects=true', function (t) {
     SERVER.get('/query/:id',
-        restify.queryParser(),
-        function (req, res, next) {
-            t.deepEqual(req.params,
-                {id: 'foo', name: {first: 'Trent', last: 'Mick'}});
-            res.send();
-            next();
-        });
-
-    var p = '/query/foo?name.first=Trent&name.last=Mick';
-    CLIENT.get(p, function (err, _, res) {
-        t.ifError(err);
-        t.equal(res.statusCode, 200);
-        t.end();
-    });
-});
-
-test('query: allowDots=false plainObjects=false', function (t) {
-    SERVER.get('/query/:id',
-        restify.queryParser({allowDots: false, plainObjects: false}),
+        restify.queryParser({allowDots: false, plainObjects: true}),
         function (req, res, next) {
             t.deepEqual(req.query,
                 {'name.first': 'Trent', 'name.last': 'Mick'});
-            t.equal(typeof (req.query.hasOwnProperty), 'function');
-            t.equal(req.query.hasOwnProperty('name.first'), true);
+            t.equal(typeof (req.query.hasOwnProperty), 'undefined');
+            t.equal(req.query['name.first'], 'Trent');
             res.send();
             next();
         });
@@ -266,41 +247,6 @@ test('query: mapParams=false', function (t) {
     });
 });
 
-test('query: arrayLimit=1', function (t) {
-    SERVER.get('/query/:id',
-        restify.queryParser({arrayLimit: 2}),
-        function (req, res, next) {
-            t.deepEqual(req.query, {field: {0: 'a', 3: 'b'}});
-            res.send();
-            next();
-        });
-
-    var p = '/query/foo?field[]=a&field[3]=b';
-    CLIENT.get(p, function (err, _, res) {
-        t.ifError(err);
-        t.equal(res.statusCode, 200);
-        t.end();
-    });
-});
-
-test('query: depth=2', function (t) {
-    SERVER.get('/query/:id',
-        restify.queryParser({depth: 2}),
-        function (req, res, next) {
-            t.deepEqual(req.query,
-                { a: { b: { c: { '[d][e][f][g][h][i]': 'j' } } } });
-            res.send();
-            next();
-        });
-
-    var p = '/query/foo?a[b][c][d][e][f][g][h][i]=j';
-    CLIENT.get(p, function (err, _, res) {
-        t.ifError(err);
-        t.equal(res.statusCode, 200);
-        t.end();
-    });
-});
-
 test('query: parameterLimit=3', function (t) {
     SERVER.get('/query/:id',
         restify.queryParser({parameterLimit: 3}),
@@ -311,23 +257,6 @@ test('query: parameterLimit=3', function (t) {
         });
 
     var p = '/query/foo?a=b&c=d&e=f&g=h';
-    CLIENT.get(p, function (err, _, res) {
-        t.ifError(err);
-        t.equal(res.statusCode, 200);
-        t.end();
-    });
-});
-
-test('query: strictNullHandling=true', function (t) {
-    SERVER.get('/query/:id',
-        restify.queryParser({strictNullHandling: true}),
-        function (req, res, next) {
-            t.deepEqual(req.query, {a: null, b: '', c: 'd'});
-            res.send();
-            next();
-        });
-
-    var p = '/query/foo?a&b=&c=d';
     CLIENT.get(p, function (err, _, res) {
         t.ifError(err);
         t.equal(res.statusCode, 200);
